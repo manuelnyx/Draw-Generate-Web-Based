@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { db } from "@/lib/db";
-import { Users, Gift, Ticket, Target, AlertCircle } from "lucide-react";
+import { Users, Gift, Ticket, Target, AlertCircle, History } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
