@@ -54,16 +54,32 @@ export default function ParticipantsPage() {
 
         const newParticipants: Participant[] = [];
 
-        for (const row of data) {
-            // Very loose header matching logic
+        for (const row of Object.values(data)) {
             const keys = Object.keys(row);
-            const nameKey = keys.find(k => k.toLowerCase().includes('name') || k.toLowerCase().includes('nama'));
-            const codeKey = keys.find(k => k.toLowerCase().includes('code') || k.toLowerCase().includes('kode'));
+            if (keys.length === 0) continue;
 
-            const name = nameKey ? row[nameKey] : (keys.length > 0 ? row[keys[0]] : null);
+            // 1. Coba tebak dari nama kolom (header)
+            let nameKey = keys.find(k => /name|nama|peserta|karyawan|member/i.test(k));
+            let codeKey = keys.find(k => /code|kode|nik|nip|id/i.test(k));
+
+            // 2. Kalau gak ketemu header "nama", cari kolom pertama yang isinya benar-benar huruf (bukan no urut angka)
+            if (!nameKey) {
+                nameKey = keys.find(k => typeof row[k] === 'string' && isNaN(Number(row[k])));
+            }
+
+            // 3. Fallback terakhir: Kalau terjebak 2 kolom, dan kolom pertama angka, pasti namanya di kolom kedua
+            if (!nameKey) {
+                if (keys.length > 1 && !isNaN(Number(row[keys[0]]))) {
+                    nameKey = keys[1];
+                } else {
+                    nameKey = keys[0];
+                }
+            }
+
+            const name = nameKey ? row[nameKey] : row[keys[0]];
             const code = codeKey ? row[codeKey] : undefined;
 
-            if (name && String(name).trim() !== "") {
+            if (name && String(name).trim() !== "" && isNaN(Number(name))) {
                 newParticipants.push({
                     id: crypto.randomUUID(),
                     eventId: activeEventId,
