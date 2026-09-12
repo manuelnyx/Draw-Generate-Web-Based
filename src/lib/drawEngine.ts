@@ -18,23 +18,27 @@ export async function getEligibleParticipants(eventId: string, prizeId: string):
         const allSessions = await db.drawSessions.where({ eventId }).toArray();
         const sessionIds = allSessions.map((s: DrawSession) => s.id);
 
-        const allResults = await db.drawResults
-            .where('drawSessionId').anyOf(sessionIds)
-            .and((r: DrawResult) => r.verificationStatus === 'CONFIRMED_WINNER')
-            .toArray();
+        if (sessionIds.length > 0) {
+            const allResults = await db.drawResults
+                .where('drawSessionId').anyOf(sessionIds)
+                .and((r: DrawResult) => r.verificationStatus === 'CONFIRMED_WINNER')
+                .toArray();
 
-        allResults.forEach((r: DrawResult) => confirmedWinnerIds.add(r.participantId));
+            allResults.forEach((r: DrawResult) => confirmedWinnerIds.add(r.participantId));
+        }
     } else {
         // If not strict mode: Exclude participants who won THIS prize only
         const prizeSessions = await db.drawSessions.where({ prizeId }).toArray();
         const sessionIds = prizeSessions.map((s: DrawSession) => s.id);
 
-        const prizeResults = await db.drawResults
-            .where('drawSessionId').anyOf(sessionIds)
-            .and((r: DrawResult) => r.verificationStatus === 'CONFIRMED_WINNER')
-            .toArray();
+        if (sessionIds.length > 0) {
+            const prizeResults = await db.drawResults
+                .where('drawSessionId').anyOf(sessionIds)
+                .and((r: DrawResult) => r.verificationStatus === 'CONFIRMED_WINNER')
+                .toArray();
 
-        prizeResults.forEach((r: DrawResult) => confirmedWinnerIds.add(r.participantId));
+            prizeResults.forEach((r: DrawResult) => confirmedWinnerIds.add(r.participantId));
+        }
     }
 
     // Also, exclude participants who are currently PENDING in an active draw session
@@ -90,10 +94,13 @@ export async function calculateRemainingWinners(prizeId: string): Promise<number
     const sessions = await db.drawSessions.where({ prizeId }).toArray();
     const sessionIds = sessions.map((s: DrawSession) => s.id);
 
-    const confirmedWinners = await db.drawResults
-        .where('drawSessionId').anyOf(sessionIds)
-        .and((r: DrawResult) => r.verificationStatus === 'CONFIRMED_WINNER')
-        .toArray();
+    let confirmedWinners: DrawResult[] = [];
+    if (sessionIds.length > 0) {
+        confirmedWinners = await db.drawResults
+            .where('drawSessionId').anyOf(sessionIds)
+            .and((r: DrawResult) => r.verificationStatus === 'CONFIRMED_WINNER')
+            .toArray();
+    }
 
     const remaining = prize.winnerCount - confirmedWinners.length;
     return Math.max(0, remaining);

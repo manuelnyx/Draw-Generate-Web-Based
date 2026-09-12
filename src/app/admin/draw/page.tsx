@@ -54,9 +54,11 @@ export default function DrawControlPage() {
         // Calculate confirmed
         const sessions = await db.drawSessions.where({ prizeId }).toArray();
         const sessionIds = sessions.map(s => s.id);
-        const results = await db.drawResults.where('drawSessionId').anyOf(sessionIds).toArray();
-
-        const confirmed = results.filter(r => r.verificationStatus === 'CONFIRMED_WINNER').length;
+        let confirmed = 0;
+        if (sessionIds.length > 0) {
+            const results = await db.drawResults.where('drawSessionId').anyOf(sessionIds).toArray();
+            confirmed = results.filter(r => r.verificationStatus === 'CONFIRMED_WINNER').length;
+        }
         setConfirmedCount(confirmed);
 
         // Calculate remaining
@@ -73,8 +75,10 @@ export default function DrawControlPage() {
         if (event?.settings.preventPreviousWinners) {
             const allEvtSessions = await db.drawSessions.where({ eventId: activeEventId }).toArray();
             const allEvtSessionIds = allEvtSessions.map(s => s.id);
-            const allEvtResults = await db.drawResults.where('drawSessionId').anyOf(allEvtSessionIds).toArray();
-            allConfirmed = allEvtResults.filter(r => r.verificationStatus === 'CONFIRMED_WINNER').length;
+            if (allEvtSessionIds.length > 0) {
+                const allEvtResults = await db.drawResults.where('drawSessionId').anyOf(allEvtSessionIds).toArray();
+                allConfirmed = allEvtResults.filter(r => r.verificationStatus === 'CONFIRMED_WINNER').length;
+            }
         }
         setEligibleCount(Math.max(0, allParticipants - allConfirmed));
     }
