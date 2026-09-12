@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
-import { db, Event, Prize, Participant, DrawSession, DrawResult } from "@/lib/db";
+import { db, Event, Prize, Participant } from "@/lib/db";
 import {
     getEligibleParticipants,
     selectUniqueParticipants,

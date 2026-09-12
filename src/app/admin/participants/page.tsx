@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { db, Participant } from "@/lib/db";
 import { useAppStore } from "@/lib/store";
-import { Upload, Plus, Trash2, Search, FileDown, AlertTriangle } from "lucide-react";
+import { Upload, Plus, Trash2, Search } from "lucide-react";
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
 
